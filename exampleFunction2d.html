@@ -1,6 +1,19 @@
+<style>
+.canvasContainer {
+  position: relative;
+}
+
+.canvasContainer canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+</style>
+
 <script src="graphplot.js"></script>
 
 <canvas id="grid" width="600px" height="600px"></canvas>
+<canvas id="fn2" width="600px" height="600px"></canvas>
 
 <script>
 var canvas = document.getElementById("grid");
@@ -20,5 +33,14 @@ var config = {
   gridColor: "#b0b0b0"
 };
 
+var func3 = function(x, y) {
+  return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
+};
+
 drawGrid(config);
+drawFunction(
+  configF2,
+  "#000000",
+  x => ((x * x) / 10) * Math.sin(x) + 0.4 + Math.sin(x * 100) / 100
+);
 </script>
