@@ -1,4 +1,4 @@
-![Logo](assets/logo.jpg = 300x)
+<img src="assets/logo.jpg" width="300">
 
 ## Welcome to GitHub Pages
 
