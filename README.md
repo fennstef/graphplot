@@ -1,5 +1,11 @@
 ![Logo]({{ site.url }}/graphplot/assets/logo.jpg | width=300)
 
+xxx
+
+![Logo](assets/logo.jpg | width=300)
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/fennstef/graphplot/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
