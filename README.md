@@ -1,4 +1,4 @@
-![Logo]({{ site.url }}/graphplot/assets/logo.jpg)
+![Logo]({{ site.url }}/graphplot/assets/logo.jpg | width=300)
 
 ## Welcome to GitHub Pages
 
