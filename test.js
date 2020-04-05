@@ -1,1 +1,3 @@
+<script>
 alert('test');
+</script>
