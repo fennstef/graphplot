@@ -1,5 +1,11 @@
 <img src="assets/logo.jpg" width="300">
 
+<div id="text"></div>
+ 
+<script>
+document.getElementById("text").innerHTML = "Text added by JavaScript code";
+</script>
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/fennstef/graphplot/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
