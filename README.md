@@ -1,10 +1,4 @@
-![Logo]({{ site.url }}/graphplot/assets/logo.jpg)
-
-xxx
-
-![Logo](assets/logo.jpg)
-
-<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+![Logo](assets/logo.jpg = 300x)
 
 ## Welcome to GitHub Pages
 
