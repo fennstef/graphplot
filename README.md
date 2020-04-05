@@ -1,6 +1,4 @@
-![Logo]({{ site.url }}/assets/logo.jpg)
-
-test
+![Logo]({{ site.url }}/graphplot/assets/logo.jpg)
 
 ## Welcome to GitHub Pages
 
