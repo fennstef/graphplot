@@ -1,6 +1,6 @@
 <img src="assets/logo.jpg" width="300">
 
-{% include_relative test.js %}
+{% include_relative exampleGrid1.html %}
 
 ## Welcome to GitHub Pages
 
