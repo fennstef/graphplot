@@ -1,5 +1,8 @@
 <img src="assets/logo.jpg" width="300">
 
+* [Grid Example](https://fennstef.github.io/graphplot/exampleFunction2d.html)
+* [2D-Function Example](https://fennstef.github.io/graphplot/exampleFunction2d.html)
+
 {% include_relative exampleGrid1.html %}
 
 {% include_relative exampleFunction2d.html %}
