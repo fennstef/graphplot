@@ -33,6 +33,11 @@ var config = {
   gridColor: "#b0b0b0"
 };
 
+var canvasF2 = document.getElementById("fn2");
+var ctxF2 = canvasF2.getContext("2d");
+var configF2 = Object.assign({}, config);
+configF2.ctx = ctxF2;
+
 var func3 = function(x, y) {
   return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
 };
