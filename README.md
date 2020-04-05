@@ -3,10 +3,6 @@
 * [Grid Example](https://fennstef.github.io/graphplot/exampleFunction2d.html)
 * [2D-Function Example](https://fennstef.github.io/graphplot/exampleFunction2d.html)
 
-{% include_relative exampleGrid1.html %}
-
-{% include_relative exampleFunction2d.html %}
-
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/fennstef/graphplot/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
