@@ -1,0 +1,32 @@
+<script src="../graphplot.js"></script>
+
+<canvas id="grid" width="600px" height="600px"></canvas>
+
+<script>
+var canvas = document.getElementById("grid");
+var ctx = canvas.getContext("2d");
+
+var config = {
+  xMin: -3,
+  xMax: 5,
+  yMin: -1,
+  yMax: 2,
+  ctx: ctx,
+  width: canvas.width,
+  height: canvas.height,
+  xFactor: 5 / 10,
+  yFactor: 4 / 10,
+  axisColor: "#000000",
+  gridColor: "#b0b0b0"
+};
+
+var func3 = function(x, y) {
+  var tmp = 1;
+  for (var i = 0; i < 60; i++) {
+    tmp /= i / 2;
+  }
+  return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
+};
+
+drawGrid(config);
+</script>
