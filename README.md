@@ -1,7 +1,7 @@
 <img src="assets/logo.jpg" width="300">
 
-* <a src="https://fennstef.github.io/graphplot/exampleGrid1.html" target="_blank">Grid Example</a>
-* <a src="https://fennstef.github.io/graphplot/exampleFunction2d.html" target="_blank">2D-Function Example</a>
+* [Grid Example](https://fennstef.github.io/graphplot/exampleGrid1.html) 
+* [2D-Function Example](https://fennstef.github.io/graphplot/exampleFunction2d.html)
 
 ## Welcome to GitHub Pages
 
