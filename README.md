@@ -1,8 +1,8 @@
-![Logo]({{ site.url }}/graphplot/assets/logo.jpg | width=300)
+![Logo]({{ site.url }}/graphplot/assets/logo.jpg)
 
 xxx
 
-![Logo](assets/logo.jpg | width=300)
+![Logo](assets/logo.jpg)
 
 <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 
