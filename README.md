@@ -2,6 +2,7 @@
 
 * [Grid Example](https://fennstef.github.io/graphplot/exampleGrid1.html) 
 * [2D-Function Example](https://fennstef.github.io/graphplot/exampleFunction2d.html)
+* [3D-Function Example](https://fennstef.github.io/graphplot/exampleFunction3d.html)
 
 ## Welcome to GitHub Pages
 
