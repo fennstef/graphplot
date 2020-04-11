@@ -14,7 +14,7 @@
 
 <div class="canvasContainer">
  <canvas id="grid" width="600px" height="600px"></canvas>
- <canvas id="fn2" width="600px" height="600px"></canvas>
+ <canvas id="fn3" width="600px" height="600px"></canvas>
 </div>
 
 <script>
@@ -35,15 +35,16 @@ var config = {
   gridColor: "#b0b0b0"
 };
 
-var canvasF2 = document.getElementById("fn2");
-var ctxF2 = canvasF2.getContext("2d");
-var configF2 = Object.assign({}, config);
-configF2.ctx = ctxF2;
+var canvasF3 = document.getElementById("fn3");
+var ctxF3 = canvasF3.getContext("2d");
+var configF3 = Object.assign({}, config);
+configF3.ctx = ctxF3;
+
+var func3 = function(x, y) {
+  return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
+};
 
 drawGrid(config);
-drawFunction(
-  configF2,
-  "#000000",
-  x => ((x * x) / 10) * Math.sin(x) + 0.4 + Math.sin(x * 100) / 100
-);
+var gv = getGradientVector(0, 512);
+draw3dFunction(configF3, -3.5, 3.5, 0.8, gv, func3);
 </script>
