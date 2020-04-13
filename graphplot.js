@@ -26,14 +26,16 @@ export function clear(c) {
     c.ctx.clearRect(0, 0, c.width, c.height);
 }
 
-export function drawGrid(c) {
+export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
     clear(c);
     const xDiff = c.xMax - c.xMin;
     const xPixPerUnit = c.width / xDiff;
     const yDiff = c.yMax - c.yMin;
     const yPixPerUnit = c.height / yDiff;
-    const xF = getGridPointDist(c.xMin, c.xMax, c.xFactor);
-    const yF = getGridPointDist(c.yMin, c.yMax, c.yFactor);
+    const xF = getGridPointDist(c.xMin, c.xMax, xFactor);
+    const yF = getGridPointDist(c.yMin, c.yMax, yFactor);
+    axisColor = axisColor || "#000000";
+    gridColor = gridColor || "#b0b0b0";
 
     {
         let startValue = Math.ceil(c.xMin / xF) * xF;
@@ -44,17 +46,17 @@ export function drawGrid(c) {
         } else {
             axisPosition = c.height - 12;
         }
-        c.ctx.strokeStyle = c.gridColor;
+        c.ctx.strokeStyle = gridColor;
         for (let i = 0; i < number; i++) {
             if (Math.abs(startValue) < xF * 0.5) {
-                c.ctx.strokeStyle = c.axisColor;
+                c.ctx.strokeStyle = axisColor;
             }
             const position = Math.round((startValue - c.xMin) * xPixPerUnit);
             drawLine(c.ctx, position, 0, position, c.height);
-            c.ctx.fillStyle = c.axisColor;
+            c.ctx.fillStyle = axisColor;
             const text = Math.round(startValue * 100) / 100;
             c.ctx.fillText(text + '', position + 4, axisPosition);
-            c.ctx.strokeStyle = c.gridColor;
+            c.ctx.strokeStyle = gridColor;
             startValue += xF;
         }
     }
@@ -68,17 +70,17 @@ export function drawGrid(c) {
         } else {
             axisPosition = 5;
         }
-        c.ctx.strokeStyle = c.gridColor;
+        c.ctx.strokeStyle = gridColor;
         for (let i = 0; i < number; i++) {
             if (Math.abs(startValue) < yF * 0.5) {
-                c.ctx.strokeStyle = c.axisColor;
+                c.ctx.strokeStyle = axisColor;
             }
             const position = c.height - Math.round((startValue - c.yMin) * yPixPerUnit);
             drawLine(c.ctx, 0, position, c.width, position);
-            c.ctx.fillStyle = c.axisColor;
+            c.ctx.fillStyle = axisColor;
             const text = Math.round(startValue * 100) / 100;
             c.ctx.fillText(text + '', axisPosition, position - 4);
-            c.ctx.strokeStyle = c.gridColor;
+            c.ctx.strokeStyle = gridColor;
             startValue += yF;
         }
     }

@@ -29,11 +29,7 @@
         yMax: 2,
         ctx: ctx,
         width: canvas.width,
-        height: canvas.height,
-        xFactor: 5 / 10,
-        yFactor: 4 / 10,
-        axisColor: "#000000",
-        gridColor: "#b0b0b0"
+        height: canvas.height
     };
 
     const canvasF2 = document.getElementById("fn2");
@@ -41,7 +37,7 @@
     const configF2 = Object.assign({}, config);
     configF2.ctx = ctxF2;
 
-    drawGrid(config);
+    drawGrid(config, 5 / 10, 4 / 10);
     drawFunction(
         configF2,
         "#000000",
