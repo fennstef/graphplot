@@ -20,20 +20,17 @@
     import {drawGrid, getGradientVector, draw3dFunction} from './graphplot.js';
 
     const canvas = document.getElementById("grid");
-    const ctx = canvas.getContext("2d");
-
     const config = {
         xMin: -3,
         xMax: 5,
         yMin: -1,
         yMax: 2,
-        ctx: ctx
+        ctx: canvas.getContext("2d")
     };
 
     const canvasF3 = document.getElementById("fn3");
-    const ctxF3 = canvasF3.getContext("2d");
     const configF3 = Object.assign({}, config);
-    configF3.ctx = ctxF3;
+    configF3.ctx = canvasF3.getContext("2d");
 
     const func3 = function (x, y) {
         return Math.sin(x * 2) * y + Math.cos(y * 5) * x;

@@ -20,20 +20,17 @@
     import {drawGrid, drawFunction} from './graphplot.js';
 
     const canvas = document.getElementById("grid");
-    const ctx = canvas.getContext("2d");
-
     const config = {
         xMin: -3,
         xMax: 5,
         yMin: -1,
         yMax: 2,
-        ctx: ctx
+        ctx: canvas.getContext("2d")
     };
 
     const canvasF2 = document.getElementById("fn2");
-    const ctxF2 = canvasF2.getContext("2d");
     const configF2 = Object.assign({}, config);
-    configF2.ctx = ctxF2;
+    configF2.ctx = canvasF2.getContext("2d");
 
     drawGrid(config);
     drawFunction(

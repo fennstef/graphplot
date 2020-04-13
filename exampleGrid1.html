@@ -5,14 +5,12 @@
     import {drawGrid} from './graphplot.js';
 
     const canvas = document.getElementById("grid");
-    const ctx = canvas.getContext("2d");
-
     const config = {
         xMin: -3,
         xMax: 5,
         yMin: -1,
         yMax: 2,
-        ctx: ctx
+        ctx: canvas.getContext("2d")
     };
 
     drawGrid(config);
