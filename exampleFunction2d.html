@@ -1,49 +1,50 @@
 <style>
-.canvasContainer {
-  position: relative;
-}
+    .canvasContainer {
+        position: relative;
+    }
 
-.canvasContainer canvas {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
+    .canvasContainer canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
 </style>
 
-<script src="graphplot.js"></script>
-
 <div class="canvasContainer">
- <canvas id="grid" width="600px" height="600px"></canvas>
- <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="grid" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
 </div>
 
-<script>
-var canvas = document.getElementById("grid");
-var ctx = canvas.getContext("2d");
+<script src="graphplot.js" type="module"></script>
+<script type="module">
+    import {drawGrid, drawFunction} from './graphplot.js';
 
-var config = {
-  xMin: -3,
-  xMax: 5,
-  yMin: -1,
-  yMax: 2,
-  ctx: ctx,
-  width: canvas.width,
-  height: canvas.height,
-  xFactor: 5 / 10,
-  yFactor: 4 / 10,
-  axisColor: "#000000",
-  gridColor: "#b0b0b0"
-};
+    const canvas = document.getElementById("grid");
+    const ctx = canvas.getContext("2d");
 
-var canvasF2 = document.getElementById("fn2");
-var ctxF2 = canvasF2.getContext("2d");
-var configF2 = Object.assign({}, config);
-configF2.ctx = ctxF2;
+    const config = {
+        xMin: -3,
+        xMax: 5,
+        yMin: -1,
+        yMax: 2,
+        ctx: ctx,
+        width: canvas.width,
+        height: canvas.height,
+        xFactor: 5 / 10,
+        yFactor: 4 / 10,
+        axisColor: "#000000",
+        gridColor: "#b0b0b0"
+    };
 
-drawGrid(config);
-drawFunction(
-  configF2,
-  "#000000",
-  x => ((x * x) / 10) * Math.sin(x) + 0.4 + Math.sin(x * 100) / 100
-);
+    const canvasF2 = document.getElementById("fn2");
+    const ctxF2 = canvasF2.getContext("2d");
+    const configF2 = Object.assign({}, config);
+    configF2.ctx = ctxF2;
+
+    drawGrid(config);
+    drawFunction(
+        configF2,
+        "#000000",
+        x => ((x * x) / 10) * Math.sin(x) + 0.4 + Math.sin(x * 100) / 100
+    );
 </script>
