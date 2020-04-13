@@ -23,15 +23,15 @@ export function getGridPointDist(min, max, factor) {
 }
 
 export function clear(c) {
-    c.ctx.clearRect(0, 0, c.width, c.height);
+    c.ctx.clearRect(0, 0, c.ctx.canvas.width, c.ctx.canvas.height);
 }
 
 export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
     clear(c);
     const xDiff = c.xMax - c.xMin;
-    const xPixPerUnit = c.width / xDiff;
+    const xPixPerUnit = c.ctx.canvas.width / xDiff;
     const yDiff = c.yMax - c.yMin;
-    const yPixPerUnit = c.height / yDiff;
+    const yPixPerUnit = c.ctx.canvas.height / yDiff;
     const xF = getGridPointDist(c.xMin, c.xMax, xFactor);
     const yF = getGridPointDist(c.yMin, c.yMax, yFactor);
     axisColor = axisColor || "#000000";
@@ -42,9 +42,9 @@ export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
         let number = Math.round(Math.floor(xDiff / xF)) + 1;
         let axisPosition;
         if (c.yMin < 0 && c.yMax > 0) {
-            axisPosition = c.height + c.yMin * yPixPerUnit + 12;
+            axisPosition = c.ctx.canvas.height + c.yMin * yPixPerUnit + 12;
         } else {
-            axisPosition = c.height - 12;
+            axisPosition = c.ctx.canvas.height - 12;
         }
         c.ctx.strokeStyle = gridColor;
         for (let i = 0; i < number; i++) {
@@ -52,7 +52,7 @@ export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
                 c.ctx.strokeStyle = axisColor;
             }
             const position = Math.round((startValue - c.xMin) * xPixPerUnit);
-            drawLine(c.ctx, position, 0, position, c.height);
+            drawLine(c.ctx, position, 0, position, c.ctx.canvas.height);
             c.ctx.fillStyle = axisColor;
             const text = Math.round(startValue * 100) / 100;
             c.ctx.fillText(text + '', position + 4, axisPosition);
@@ -75,8 +75,8 @@ export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
             if (Math.abs(startValue) < yF * 0.5) {
                 c.ctx.strokeStyle = axisColor;
             }
-            const position = c.height - Math.round((startValue - c.yMin) * yPixPerUnit);
-            drawLine(c.ctx, 0, position, c.width, position);
+            const position = c.ctx.canvas.height - Math.round((startValue - c.yMin) * yPixPerUnit);
+            drawLine(c.ctx, 0, position, c.ctx.canvas.width, position);
             c.ctx.fillStyle = axisColor;
             const text = Math.round(startValue * 100) / 100;
             c.ctx.fillText(text + '', axisPosition, position - 4);
@@ -88,26 +88,26 @@ export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
 
 export function xCoordToPix(c, xCoord) {
     const xDiff = c.xMax - c.xMin;
-    const xPixPerUnit = c.width / xDiff;
+    const xPixPerUnit = c.ctx.canvas.width / xDiff;
     return (xCoord - c.xMin) * xPixPerUnit;
 }
 
 export function yCoordToPix(c, yCoord) {
     const yDiff = c.yMax - c.yMin;
-    const yPixPerUnit = c.height / yDiff;
-    return c.height - (yCoord - c.yMin) * yPixPerUnit;
+    const yPixPerUnit = c.ctx.canvas.height / yDiff;
+    return c.ctx.canvas.height - (yCoord - c.yMin) * yPixPerUnit;
 }
 
 export function xPixToCoord(c, xPix) {
     const xDiff = c.xMax - c.xMin;
-    const xPixPerUnit = c.width / xDiff;
+    const xPixPerUnit = c.ctx.canvas.width / xDiff;
     return xPix / xPixPerUnit + c.xMin;
 }
 
 export function yPixToCoord(c, yPix) {
     const yDiff = c.yMax - c.yMin;
-    const yPixPerUnit = c.height / yDiff;
-    return -(yPix - c.height) / yPixPerUnit + c.yMin;
+    const yPixPerUnit = c.ctx.canvas.height / yDiff;
+    return -(yPix - c.ctx.canvas.height) / yPixPerUnit + c.yMin;
 }
 
 export function drawLine(ctx, x1, y1, x2, y2) {
@@ -122,7 +122,7 @@ export function drawFunction(c, strokeStyle, func) {
     c.ctx.strokeStyle = strokeStyle;
     c.ctx.lineWidth = 3;
     c.ctx.beginPath();
-    for (let w = 0; w <= c.width; w++) {
+    for (let w = 0; w <= c.ctx.canvas.width; w++) {
         const y = func(xPixToCoord(c, w));
         const h = yCoordToPix(c, y);
         if (w === 0) {
@@ -278,7 +278,7 @@ export function getGradientVector(colorMapIndex, levels) {
 
 export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
     clear(c);
-    const data = c.ctx.createImageData(c.width, c.height);
+    const data = c.ctx.createImageData(c.ctx.canvas.width, c.ctx.canvas.height);
 
     let w = 0;
     let h = -1;
@@ -286,11 +286,11 @@ export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
     const drawInTimeSlot = function () {
         const start = +new Date();
         while (+new Date() - start < 70) {
-            if (w >= c.width) {
+            if (w >= c.ctx.canvas.width) {
                 break;
             }
             h++;
-            if (h === c.height + 1) {
+            if (h === c.ctx.canvas.height + 1) {
                 w++;
                 h = 0;
             }
@@ -310,7 +310,7 @@ export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
             if (z < zMin || z > zMax) {
                 a *= 0.5;
             }
-            const index = h * c.width * 4 + w * 4;
+            const index = h * c.ctx.canvas.width * 4 + w * 4;
             data.data[index] = r;
             data.data[index + 1] = g;
             data.data[index + 2] = b;
