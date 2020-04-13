@@ -32,6 +32,8 @@ export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
     const xPixPerUnit = c.ctx.canvas.width / xDiff;
     const yDiff = c.yMax - c.yMin;
     const yPixPerUnit = c.ctx.canvas.height / yDiff;
+    xFactor = xFactor || 1;
+    yFactor = yFactor || 1;
     const xF = getGridPointDist(c.xMin, c.xMax, xFactor);
     const yF = getGridPointDist(c.yMin, c.yMax, yFactor);
     axisColor = axisColor || "#000000";
