@@ -268,8 +268,8 @@ export function getGradientVector(colorMapIndex, levels) {
     canvas.height = levels;
     const ctx2 = canvas.getContext("2d");
     const gradient = ctx2.createLinearGradient(0, 0, 0, levels);
-    for (let pos in gradientColors) {
-        gradient.addColorStop(pos, gradientColors[pos]);
+    for (let pos of Object.keys(gradientColors)) {
+        gradient.addColorStop(parseFloat(pos), gradientColors[pos]);
     }
     ctx2.fillStyle = gradient;
     ctx2.fillRect(0, 0, 1, levels);
