@@ -184,14 +184,13 @@ export function getGradientVector(colorMapIndex, levels) {
         1.0: "rgb(34, 206, 222)"
     };
     const gradientColors3 = {
-        0.0: "rgb(51, 0, 102)",
-        0.5: "rgb(0, 0, 128)",
-        1.0: "rgb(204, 255, 255)"
+        0.0: "rgb(0, 0, 0)",
+        0.5: "#0081a8",
+        1.0: "rgb(255, 255, 255)"
     };
     const gradientColors4 = {
-        0.0: "rgb(102, 0, 0)",
-        0.5: "rgb(102, 0, 0)",
-        1.0: "rgb(255, 102, 0)"
+        0.0: "#0055e4",
+        1.0: "#c70000"
     };
     const gradientColors5 = {
         0.0: "rgb(0, 0, 0)",
@@ -236,20 +235,22 @@ export function getGradientVector(colorMapIndex, levels) {
         1.0: "rgb(255, 255, 255)"
     };
     const gradientColors6 = {
-        0.0: "rgb(120, 28, 23)",
+        0.0: "#c70000",
         0.5: "rgb(224, 137, 0)",
         1.0: "rgb(224, 206, 0)"
     };
     const gradientColors7 = {
-        0.0: "rgb(55, 14, 77)",
-        0.5: "rgb(128, 9, 14)",
-        1.0: "rgb(115, 143, 79)"
+        0.0: 'rgb(0, 0, 0)',
+        0.6: 'rgb(24, 53, 103)',
+        0.75: 'rgb(46, 100, 158)',
+        0.9: 'rgb(23, 173, 203)',
+        1.0: 'rgb(0, 250, 250)'
     };
     const gradientColors8 = {
-        0.0: "rgb(109, 79, 143)",
-        0.33: "rgb(143, 79, 79)",
-        0.66: "rgb(122, 76, 47)",
-        1.0: "rgb(142, 143, 79)"
+        0: '#000',
+        0.33: '#640901',
+        0.66: '#f6eb36',
+        1: '#ffffff'
     };
     const gradientColors9 = {
         0:'#ff3800',
