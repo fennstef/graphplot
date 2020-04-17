@@ -39,7 +39,7 @@
     drawGrid(config);
     window.draw3dFunctionWithGradient = function(gradientIndex) {
         console.log("draw3dFunctionWithGradient", gradientIndex);
-        const gv = getGradientVector(gradientIndex, 512);
+        const gv = getGradientVector(gradientIndex, 4096);
         draw3dFunction(configF3, -3.5, 3.5, 0.9, gv, func3);
     };
     window.draw3dFunctionWithGradient(0);
