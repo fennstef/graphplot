@@ -251,6 +251,16 @@ export function getGradientVector(colorMapIndex, levels) {
         0.66: "rgb(122, 76, 47)",
         1.0: "rgb(142, 143, 79)"
     };
+    const gradientColors9 = {
+        0:'#ff3800',
+        0.1429:'#ff6500',
+        0.2857:'#ffa54f',
+        0.4286:'#ffc78f',
+        0.5714:'#ffe1c6',
+        0.7143:'#fef9ff',
+        0.8571:'#c9d9ff',
+        1:'#9fbfff'
+    };
 
     const gradientColorList = [
         gradientColors1,
@@ -260,7 +270,8 @@ export function getGradientVector(colorMapIndex, levels) {
         gradientColors5,
         gradientColors6,
         gradientColors7,
-        gradientColors8
+        gradientColors8,
+        gradientColors9
     ];
 
     const gradientColors = gradientColorList[colorMapIndex];
@@ -319,7 +330,9 @@ export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
             data.data[index + 3] = a;
         }
         c.ctx.putImageData(data, 0, 0);
-        setTimeout(drawInTimeSlot);
+        if (w < c.ctx.canvas.width) {
+            drawInTimeSlot();
+        }
     };
 
     drawInTimeSlot();
