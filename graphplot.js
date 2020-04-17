@@ -332,10 +332,9 @@ export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
         }
         c.ctx.putImageData(data, 0, 0);
         if (w < c.ctx.canvas.width) {
-            drawInTimeSlot();
+            setTimeout(()=> drawInTimeSlot());
         }
     };
 
     drawInTimeSlot();
-    c.ctx.putImageData(data, 0, 0);
 }
