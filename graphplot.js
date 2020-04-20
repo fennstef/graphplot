@@ -136,6 +136,16 @@ export function drawFunction(c, strokeStyle, func) {
     c.ctx.stroke();
 }
 
+export function drawPoints(c, fillStyle, points) {
+    clear(c);
+    c.ctx.fillStyle = fillStyle;
+    for(let point of points){
+        c.ctx.beginPath();
+        c.ctx.arc(xCoordToPix(c,point[0]), yCoordToPix(c,point[1]), 5, 0, 2 * Math.PI, true);
+        c.ctx.fill();
+    }
+}
+
 export function getGradientVector(colorMapIndex, levels) {
     const gradientColors1 = {
         0.0: "rgb(51, 59, 126)",
