@@ -13,13 +13,14 @@
 <div class="canvasContainer">
     <canvas id="grid" width="600px" height="600px"></canvas>
     <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="gp_mean" width="600px" height="600px"></canvas>
     <canvas id="observations" width="600px" height="600px"></canvas>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
 <script src="graphplot.js" type="module"></script>
 <script type="module">
-    import {drawFunction, drawGrid, drawPoints} from './graphplot.js';
+    import {drawFunction, drawGrid, drawPoints, xPixToCoord, xCoordToPix} from './graphplot.js';
 
     const canvas = document.getElementById("grid");
     const config = {
@@ -38,6 +39,10 @@
     const configObs = Object.assign({}, config);
     configObs.ctx = canvasObs.getContext("2d");
 
+    const canvasGpMean = document.getElementById("gp_mean");
+    const configGpMean = Object.assign({}, config);
+    configGpMean.ctx = canvasGpMean.getContext("2d");
+
     drawGrid(config);
     const func = x => {
         if ((x < 0) || (x > Math.PI)) return 0;
@@ -49,7 +54,9 @@
     };
     drawFunction(configF2, "#000000", func);
 
-    let observations = [0.9, 1.2, 1.5, 1.6, 2.1, 2.5, 2.8].map(x => [x, func(x)]);
+    let observationsX = [0.9, 1.2, 1.5, 1.6, 2.1, 2.5, 2.8];
+    let observationsY = observationsX.map(x => func(x));
+    let observations = observationsX.map(x => [x, func(x)]);
     drawPoints(
         configObs,
         "#0000FF",
@@ -60,27 +67,57 @@
         let n = math.norm(math.subtract(x1, x2));
         return math.exp(-0.5 * n * n);
     }
-    console.log(kernel([1,2],[3,5]));
 
-    /*
-    "def K(X0, X1, kernel=sq_exp_kernel):\n",
-    "    K = []\n",
-    "    for x0 in X0:\n",
-    "        k_x_x = []\n",
-    "        for x1 in X1:\n",
-    "            k_x_x.append(kernel(x0, x1))\n",
-    "        K.append(k_x_x)\n",
-    "    if len(K) == 1:\n",
-    "        K = K[0]\n",
-    "    return np.array(K)"
+    const K = function (x0, x1, kernel) {
+        let K = [];
+        for (let x0i of x0) {
+            let k_x_x = [];
+            for (let x1i of x1) {
+                k_x_x.push(kernel(x0i, x1i));
+            }
+            K.push(k_x_x);
+        }
+        return K;
+    }
 
-     */
+    const posterioriMean = function (x, x_new, sigma, y, kernel) {
+        let scope = {
+            x_new: x_new,
+            x: x,
+            xl: x.length,
+            sigma: sigma,
+            y: y,
+            K: (x1, x2) => K(x1, x2, kernel)
+        }
+        return math.evaluate('K(x_new,x) * inv(K(x,x) + sigma .* identity(xl)) * transpose(y)', scope);
+    }
 
-    /*
-     "def posterior_Mean(X, X_new, sigma, y):\n",
-    "    X_new = [X_new]\n",
-    "    return np.dot(np.dot(K(X_new, X), np.linalg.inv(K(X, X)+ sigma*np.eye(len(X)))), np.array([y]).T).flatten()"
-     */
+    const zip = function (a, b) {
+        let zip = [];
+        for (let i = 0; i < a.length; i++) {
+            zip.push([a[i], b[i]]);
+        }
+        return zip;
+    }
+
+    const x_new = [];
+    const xCoordStart = xCoordToPix(config, -0.2);
+    const xCoordEnd = xCoordToPix(config, 3.4);
+    for (let i = xCoordStart; i < xCoordEnd; i++) {
+        x_new.push(xPixToCoord(config, i))
+    }
+    const y_new = posterioriMean(observationsX, x_new, 0.00000000, observationsY, kernel).valueOf();
+    const xy_new = zip(x_new, y_new);
+    drawPoints(
+        configGpMean,
+        "#00FF00",
+        xy_new
+    );
+    drawFunction(configGpMean, "#00ff00", (x)=> {
+        const w = xCoordToPix(config, x);
+        return y_new[w-xCoordStart];
+    });
+
 </script>
 
 
@@ -92,6 +129,6 @@
     <h3>Plot of function</h3>
 
     <p>
-        \[ f(x) = \sum_{i=1}^{10}\sin(x)*\sin(\frac{i*x^2}{\pi})^{20} \]
+        \[ f(x) = \sum_{i=1}^{10}\sin(x)\ \sin(\frac{i\ x^2}{\pi})^{20} \]
     </p>
 </div>
