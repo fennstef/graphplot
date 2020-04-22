@@ -54,7 +54,7 @@
     };
     drawFunction(configF2, "#000000", func);
 
-    let observationsX = [0.9, 1.2, 1.5, 1.6, 2.1, 2.5, 2.8];
+    let observationsX = [0.2, 0.5, 0.9, 1.2, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.5, 2.8, 3];
     let observationsY = observationsX.map(x => func(x));
     let observations = observationsX.map(x => [x, func(x)]);
     drawPoints(
@@ -106,7 +106,7 @@
     for (let i = xCoordStart; i < xCoordEnd; i++) {
         x_new.push(xPixToCoord(config, i))
     }
-    const y_new = posterioriMean(observationsX, x_new, 0.00000000, observationsY, kernel).valueOf();
+    const y_new = posterioriMean(observationsX, x_new, 1e-10, observationsY, kernel).valueOf();
     const xy_new = zip(x_new, y_new);
     drawPoints(
         configGpMean,
