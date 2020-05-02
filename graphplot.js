@@ -91,13 +91,13 @@ export function drawGrid(c, xFactor, yFactor, axisColor, gridColor) {
 export function xCoordToPix(c, xCoord) {
     const xDiff = c.xMax - c.xMin;
     const xPixPerUnit = c.ctx.canvas.width / xDiff;
-    return (xCoord - c.xMin) * xPixPerUnit;
+    return Math.round((xCoord - c.xMin) * xPixPerUnit);
 }
 
 export function yCoordToPix(c, yCoord) {
     const yDiff = c.yMax - c.yMin;
     const yPixPerUnit = c.ctx.canvas.height / yDiff;
-    return c.ctx.canvas.height - (yCoord - c.yMin) * yPixPerUnit;
+    return Math.round(c.ctx.canvas.height - (yCoord - c.yMin) * yPixPerUnit);
 }
 
 export function xPixToCoord(c, xPix) {
@@ -134,6 +134,15 @@ export function drawFunction(c, strokeStyle, func) {
         c.ctx.lineTo(w, h);
     }
     c.ctx.stroke();
+}
+
+export function lineToPoints(c, wPoints, yPoints) {
+    for (let i=0; i < wPoints.length; i++) {
+        const w = wPoints[i];
+        const y = yPoints[i];
+        const h = yCoordToPix(c, y);
+        c.ctx.lineTo(w, h);
+    }
 }
 
 export function drawPoints(c, fillStyle, points) {
