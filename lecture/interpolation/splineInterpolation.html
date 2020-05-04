@@ -1,0 +1,163 @@
+<h1>Spline Interpolation</h1>
+
+<style>
+    .canvasContainer {
+        position: relative;
+    }
+
+    .canvasContainer canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+</style>
+
+<div class="canvasContainer">
+    <canvas id="grid" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="interpolation" width="600px" height="600px"></canvas>
+</div>
+<div style="width:600px;height:600px;padding-left:620px">
+    <button onclick="clearObservations()">Clear Observations</button>
+    <br/>
+    <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
+<script src="../../graphplot.js" type="module"></script>
+<script type="module">
+    import {drawFunction, drawGrid, drawPoints} from '../../graphplot.js';
+
+    const canvas = document.getElementById("grid");
+    const config = {
+        xMin: -1,
+        xMax: 2,
+        yMin: -2.2,
+        yMax: 2.2,
+        ctx: canvas.getContext("2d")
+    };
+
+    const canvasObservations = document.getElementById("observations");
+    const configObservations = Object.assign({}, config);
+    configObservations.ctx = canvasObservations.getContext("2d");
+
+    const canvasF2 = document.getElementById("fn2");
+    const configF2 = Object.assign({}, config);
+    configF2.ctx = canvasF2.getContext("2d");
+
+    const canvasInterpolation = document.getElementById("interpolation");
+    const configInterpolation = Object.assign({}, config);
+    configInterpolation.ctx = canvasInterpolation.getContext("2d");
+
+    const func = x => {
+        let result = -x * Math.sin(10 * x);
+        if ((x < -1) || (x > 2)) return -2;
+        return result;
+    };
+    let observationsX = [-0.5, 0.1, 1.2, 1.65];
+    let observationsY = observationsX.map(x => func(x));
+    let observations = observationsX.map(x => [x, func(x)]);
+    let observationsK = [];
+
+    const interpolateSpline = function (x) {
+        let i = 1;
+        while (observationsX[i] < x) {
+            i++;
+            if(i==observationsX.length){
+                i--;
+                break;
+            }
+        }
+
+        const t = (x - observationsX[i - 1]) / (observationsX[i] - observationsX[i - 1]);
+        const a = observationsK[i - 1] * (observationsX[i] - observationsX[i - 1]) - (observationsY[i] - observationsY[i - 1]);
+        const b = -observationsK[i] * (observationsX[i] - observationsX[i - 1]) + (observationsY[i] - observationsY[i - 1]);
+
+        return (1 - t) * observationsY[i - 1] + t * observationsY[i] + t * (1 - t) * (a * (1 - t) + b * t);
+    }
+
+    const computeSplineNaturalDerivations = function (observationsX, observationsY)    // in x values, in y values, out k values
+    {
+        const n = observationsX.length - 1;
+        const matrix = math.zeros(n + 1, n + 1).valueOf();
+        const vector = math.zeros(n+1).valueOf();
+        for (let i = 1; i < n; i++) {
+            let h_im1 = observationsX[i] - observationsX[i - 1];
+            let h_i = observationsX[i + 1] - observationsX[i];
+            matrix[i][i - 1] = 1 / h_im1;
+            matrix[i][i] = 2 * (1 / h_im1 + 1 / h_i);
+            matrix[i][i + 1] = 1 / h_i;
+            let y_im1 = observationsY[i] - observationsY[i - 1];
+            let y_i = observationsY[i + 1] - observationsY[i];
+            vector[i] = 3 * (y_im1 / (h_im1 * h_im1)
+                + y_i / (h_i * h_i));
+        }
+
+        let h_0 = observationsX[1] - observationsX[0];
+        let y_0 = observationsY[1] - observationsY[0];
+        matrix[0][0] = 2 / h_0;
+        matrix[0][1] = 1 / h_0;
+        vector[0] = 3 * y_0 / (h_0 * h_0);
+
+        let h_nm1 = observationsX[n] - observationsX[n - 1];
+        let y_nm1 = observationsY[n] - observationsY[n - 1];
+        matrix[n][n - 1] = 1 / h_nm1;
+        matrix[n][n] = 2 / h_nm1;
+        vector[n] = 3 * y_nm1 / (h_nm1 * h_nm1);
+        return math.multiply(math.inv(matrix),vector);
+    }
+
+    const drawAll = function () {
+        if(observationsX.length<2){
+            return;
+        }
+        drawGrid(config);
+        drawPoints(
+            configObservations,
+            "#0000FF",
+            observations
+        );
+
+        drawFunction(
+            configF2,
+            "#00000030",
+            x => func(x)
+        );
+
+        observationsK = computeSplineNaturalDerivations(observationsX, observationsY);
+        drawFunction(
+            configInterpolation,
+            "#000000",
+            x => interpolateSpline(x)
+        );
+    };
+    drawAll();
+
+    window.addRandomObservationPoint = function () {
+        const x = Math.random() * (config.xMax - config.xMin) + config.xMin;
+        observationsX.push(x);
+        observationsX.sort((a, b) => a - b);
+        observationsY = observationsX.map(x => func(x));
+        observations = observationsX.map(x => [x, func(x)]);
+        drawAll();
+    };
+    window.clearObservations = function () {
+        observationsX = [];
+        window.addRandomObservationPoint();
+        window.addRandomObservationPoint();
+    };
+</script>
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+<div style="width:600px;padding-top:20px">
+    <h3>Plot of function</h3>
+
+    <p>
+        \[ f(x) = - x \sin(10 x) \]
+    </p>
+</div>
