@@ -1,0 +1,173 @@
+<h1>Radial Basis Function Interpolation</h1>
+
+<style>
+    .canvasContainer {
+        position: relative;
+    }
+
+    .canvasContainer canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+</style>
+
+<div class="canvasContainer">
+    <canvas id="grid" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="interpolation" width="600px" height="600px"></canvas>
+</div>
+<div style="width:600px;height:600px;padding-left:620px">
+    Kernel
+    <select onchange="window.updateKernel(this.selectedIndex);">
+        <option value="0">Gaussian Function</option>
+        <option value="1">Multiquadric Function</option>
+        <option value="2">Bump Function</option>
+    </select>
+    <br/>
+    <label>Kernel Parameter</label><input type="range" min="1" max="200" value="5"
+                                          onchange="window.updateKernelParam(this.value);"></input>
+    <br/>
+    <button onclick="clearObservations()">Clear Observations</button>
+    <br/>
+    <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
+<script src="../../graphplot.js" type="module"></script>
+<script type="module">
+    import {drawFunction, drawGrid, drawPoints} from '../../graphplot.js';
+
+    const canvas = document.getElementById("grid");
+    const config = {
+        xMin: -1,
+        xMax: 2,
+        yMin: -2.2,
+        yMax: 2.2,
+        ctx: canvas.getContext("2d")
+    };
+
+    const canvasObservations = document.getElementById("observations");
+    const configObservations = Object.assign({}, config);
+    configObservations.ctx = canvasObservations.getContext("2d");
+
+    const canvasF2 = document.getElementById("fn2");
+    const configF2 = Object.assign({}, config);
+    configF2.ctx = canvasF2.getContext("2d");
+
+    const canvasInterpolation = document.getElementById("interpolation");
+    const configInterpolation = Object.assign({}, config);
+    configInterpolation.ctx = canvasInterpolation.getContext("2d");
+
+    const func = x => {
+        let result = -x * Math.sin(10 * x);
+        if ((x < -1) || (x > 2)) return -2;
+        return result;
+    };
+    let observationsX = [-0.5, 0.1, 1.2, 1.65];
+    let observationsY = observationsX.map(x => func(x));
+    let observations = observationsX.map(x => [x, func(x)]);
+    let kernelIndex = 0;
+    let kernelParam = 0.1;
+    let weights;
+
+    const kernelWithParameter = function (x1, x2, param) {
+        let n = math.norm(math.subtract(x1, x2));
+        if (kernelIndex == 0) {
+            return math.exp(-kernelParam * kernelParam * n * n);
+        } else if (kernelIndex == 1) {
+            return math.sqrt(1 + kernelParam * kernelParam * n * n);
+        } else if (kernelIndex == 2) {
+            if (n < 1 / kernelParam) {
+                return math.exp(-1.0 / (1 - kernelParam * kernelParam * n * n));
+            }
+            return 0;
+        }
+        return 0;
+    };
+
+    const K = function (x0, x1, kernel) {
+        let K = [];
+        for (let x0i of x0) {
+            let k_x_x = [];
+            for (let x1i of x1) {
+                k_x_x.push(kernel(x0i, x1i));
+            }
+            K.push(k_x_x);
+        }
+        return K;
+    };
+
+    const interpolateRadialBasisFunction = function (x) {
+        const kernel = (x1, x2) => kernelWithParameter(x1, x2, kernelParam);
+        const phiX = observationsX.map(xi => kernel(x, xi));
+        const y = math.multiply(weights, math.transpose(phiX));
+        return y;
+    };
+
+    const drawAll = function () {
+        const kernel = (x1, x2) => kernelWithParameter(x1, x2, kernelParam);
+        const matK = K(observationsX, observationsX, kernel);
+        const invMatK = math.inv(matK);
+        weights = math.multiply(invMatK, observationsY);
+
+
+        if (observationsX.length < 2) {
+            return;
+        }
+        drawGrid(config);
+        drawPoints(
+            configObservations,
+            "#0000FF",
+            observations
+        );
+
+        drawFunction(
+            configF2,
+            "#00000030",
+            x => func(x)
+        );
+
+        drawFunction(
+            configInterpolation,
+            "#000000",
+            x => interpolateRadialBasisFunction(x)
+        );
+    };
+    drawAll();
+    window.updateKernel = function (index) {
+        kernelIndex = index;
+        drawAll();
+    };
+    window.updateKernelParam = function (param) {
+        kernelParam = param / 10;
+        drawAll();
+    };
+    window.addRandomObservationPoint = function () {
+        const x = Math.random() * (config.xMax - config.xMin) + config.xMin;
+        observationsX.push(x);
+        observationsX.sort((a, b) => a - b);
+        observationsY = observationsX.map(x => func(x));
+        observations = observationsX.map(x => [x, func(x)]);
+        drawAll();
+    };
+    window.clearObservations = function () {
+        observationsX = [];
+        window.addRandomObservationPoint();
+        window.addRandomObservationPoint();
+    };
+</script>
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+<div style="width:600px;padding-top:20px">
+    <h3>Plot of function</h3>
+
+    <p>
+        \[ f(x) = - x \sin(10 x) \]
+    </p>
+</div>
