@@ -1,0 +1,110 @@
+<h1>Nearest-neighbor Interpolation</h1>
+
+<style>
+    .canvasContainer {
+        position: relative;
+    }
+
+    .canvasContainer canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+</style>
+
+<div class="canvasContainer">
+    <canvas id="grid" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="interpolation" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
+</div>
+<div style="width:600px;height:600px;padding-left:620px">
+    <button onclick="clearObservations()">Clear Observations</button>
+    <br/>
+    <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
+<script src="../../graphplot.js" type="module"></script>
+<script type="module">
+    import {drawFunction, drawGrid, drawPoints, getGradientVector, draw3dFunction} from '../../graphplot.js';
+
+    const canvas = document.getElementById("grid");
+    const config = {
+        xMin: -1,
+        xMax: 2,
+        yMin: -2.2,
+        yMax: 2.2,
+        ctx: canvas.getContext("2d")
+    };
+
+    const canvasObservations = document.getElementById("observations");
+    const configObservations = Object.assign({}, config);
+    configObservations.ctx = canvasObservations.getContext("2d");
+
+    const canvasF2 = document.getElementById("fn2");
+    const configF2 = Object.assign({}, config);
+    configF2.ctx = canvasF2.getContext("2d");
+
+    const canvasInterpolation = document.getElementById("interpolation");
+    const configInterpolation = Object.assign({}, config);
+    configInterpolation.ctx = canvasInterpolation.getContext("2d");
+
+    const func3 = function (x, y) {
+        return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
+    };
+    let observationsX = [[-0.5, 0], [0.1,1], [1.2,-1], [1.65,0.5]];
+    let observationsY = observationsX.map(x => func3(x[0], x[1]));
+    let observations = observationsX.map(x => [x, func3(x[0],x[1])]);
+
+    const interpolateNearestNeighbour = function (x1, x2) {
+        const x = [x1,x2];
+        let minDistance = Infinity;
+        let nearestY = Infinity;
+        for (let i = 0; i < observationsX.length; i++) {
+            const distance = math.norm(math.subtract(x, observationsX[i]));
+            if (distance < minDistance){
+                minDistance = distance;
+                nearestY = observationsY[i];
+            }
+        }
+        return nearestY;
+    }
+
+    const drawAll = function () {
+        drawGrid(config);
+
+        drawPoints(
+            configObservations,
+            "#0000FF",
+            observationsX
+        );
+
+        window.draw3dFunctionWithGradient = function(gradientIndex) {
+            const gv = getGradientVector(gradientIndex, 4096);
+            draw3dFunction(configInterpolation, -3.5, 3.5, 0.9, gv, interpolateNearestNeighbour);
+        };
+        window.draw3dFunctionWithGradient(0);
+    };
+    drawAll();
+
+    window.addRandomObservationPoint = function () {
+        const x1 = Math.random() * (config.xMax - config.xMin) + config.xMin;
+        const x2 = Math.random() * (config.yMax - config.yMin) + config.yMin;
+        observationsX.push([x1,x2]);
+        observationsX.sort((a,b) => a-b);
+        observationsY = observationsX.map(x => func3(x[0], x[1]));
+        observations = observationsX.map(x => [x, func3(x[0], x[1])]);
+        drawAll();
+    };
+    window.clearObservations = function () {
+        observationsX = [];
+        window.addRandomObservationPoint();
+    };
+</script>
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>

@@ -1,4 +1,4 @@
-<h1>Lineare Interpolation</h1>
+<h1>Nearest-neighbor Interpolation</h1>
 
 <style>
     .canvasContainer {
@@ -58,26 +58,17 @@
     let observationsY = observationsX.map(x => func(x));
     let observations = observationsX.map(x => [x, func(x)]);
 
-    const leftRightNeighbor = function (x, observationsX) {
+    const interpolateNearestNeighbour = function (x) {
+        let minDistance = Infinity;
+        let nearestY = Infinity;
         for (let i = 0; i < observationsX.length; i++) {
-            if (i == observationsX.length - 1) {
-                return [observationsX.length - 2, observationsX.length - 1];
-            }
-            if(observationsX[i+1] > x){
-                return [i, i+1];
+            const distance = Math.abs(x - observationsX[i]);
+            if (distance < minDistance){
+                minDistance = distance;
+                nearestY = observationsY[i];
             }
         }
-    };
-
-    const interpolateLinear = function (x) {
-        const nn = leftRightNeighbor(x, observationsX);
-        const x1 = observationsX[nn[0]];
-        const x2 = observationsX[nn[1]];
-        const y1 = observationsY[nn[0]];
-        const y2 = observationsY[nn[1]];
-        const m = (y2 - y1) / (x2 - x1);
-        const y = m * (x - x1) + y1;
-        return y;
+        return nearestY;
     }
 
     const drawAll = function () {
@@ -97,7 +88,7 @@
         drawFunction(
             configInterpolation,
             "#000000",
-            x => interpolateLinear(x)
+            x => interpolateNearestNeighbour(x)
         );
     };
     drawAll();
