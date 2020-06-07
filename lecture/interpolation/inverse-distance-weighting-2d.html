@@ -14,9 +14,9 @@
 
 <div class="canvasContainer">
     <canvas id="grid" width="600px" height="600px"></canvas>
-    <canvas id="observations" width="600px" height="600px"></canvas>
     <canvas id="fn2" width="600px" height="600px"></canvas>
     <canvas id="interpolation" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
 </div>
 <div style="width:600px;height:600px;padding-left:620px">
     <label>Distance Exponent</label><input type="range" min="5" max="50" value="20"
@@ -27,9 +27,10 @@
     <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
 <script src="../../graphplot.js" type="module"></script>
 <script type="module">
-    import {drawFunction, drawGrid, drawPoints} from '../../graphplot.js';
+    import {draw3dFunction, drawGrid, drawPoints, getGradientVector} from '../../graphplot.js';
 
     const canvas = document.getElementById("grid");
     const config = {
@@ -52,18 +53,18 @@
     const configInterpolation = Object.assign({}, config);
     configInterpolation.ctx = canvasInterpolation.getContext("2d");
 
-    const func = x => {
-        let result = -x * Math.sin(10 * x);
-        if ((x < -1) || (x > 2)) return -2;
-        return result;
+    const func3 = function (x, y) {
+        return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
     };
-    let observationsX = [-0.5, 0.1, 1.2, 1.65];
-    let observationsY = observationsX.map(x => func(x));
-    let observations = observationsX.map(x => [x, func(x)]);
-    let weightParam = 2;
-    let distanceFunc = (x1, x2) => Math.pow(Math.abs(x1 - x2), weightParam);
+    let observationsX = [[-0.5, 0], [0.1, 1], [1.2, -1], [1.65, 0.5]];
+    let observationsY = observationsX.map(x => func3(x[0], x[1]));
+    let observations = observationsX.map(x => [x, func3(x[0], x[1])]);
 
-    const interpolateIDW = function (x) {
+    let weightParam = 2;
+    let distanceFunc = (x1, x2) => Math.pow(math.norm(math.subtract(x1, x2)), weightParam);
+
+    const interpolateIDW = function (x1, x2) {
+        const x = [x1, x2];
         let u = 0;
         let l = 0;
         for (let i = 0; i < observationsX.length; i++) {
@@ -78,36 +79,32 @@
             l += w_i;
         }
         return u / l;
-    };
+    }
 
     const drawAll = function () {
         drawGrid(config);
+
         drawPoints(
             configObservations,
             "#0000FF",
-            observations
+            observationsX
         );
 
-        drawFunction(
-            configF2,
-            "#00000030",
-            x => func(x)
-        );
-
-        drawFunction(
-            configInterpolation,
-            "#000000",
-            x => interpolateIDW(x)
-        );
+        window.draw3dFunctionWithGradient = function (gradientIndex) {
+            const gv = getGradientVector(gradientIndex, 4096);
+            draw3dFunction(configInterpolation, -2.5, 2.5, 0.9, gv, interpolateIDW);
+        };
+        window.draw3dFunctionWithGradient(0);
     };
     drawAll();
 
     window.addRandomObservationPoint = function () {
-        const x = Math.random() * (config.xMax - config.xMin) + config.xMin;
-        observationsX.push(x);
+        const x1 = Math.random() * (config.xMax - config.xMin) + config.xMin;
+        const x2 = Math.random() * (config.yMax - config.yMin) + config.yMin;
+        observationsX.push([x1, x2]);
         observationsX.sort((a, b) => a - b);
-        observationsY = observationsX.map(x => func(x));
-        observations = observationsX.map(x => [x, func(x)]);
+        observationsY = observationsX.map(x => func3(x[0], x[1]));
+        observations = observationsX.map(x => [x, func3(x[0], x[1])]);
         drawAll();
     };
     window.clearObservations = function () {
@@ -117,7 +114,7 @@
     window.updateWeightParam = function (value) {
         weightParam = value / 10;
         drawAll();
-    }
+    };
 </script>
 
 
@@ -125,10 +122,3 @@
 <script id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
 </script>
-<div style="width:600px;padding-top:20px">
-    <h3>Plot of function</h3>
-
-    <p>
-        \[ f(x) = - x \sin(10 x) \]
-    </p>
-</div>
