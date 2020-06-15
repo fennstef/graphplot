@@ -1,6 +1,12 @@
 <h1>Spline Interpolation</h1>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Dosis', sans-serif;
+    }
+
     .canvasContainer {
         position: relative;
     }
@@ -64,7 +70,7 @@
         let i = 1;
         while (observationsX[i] < x) {
             i++;
-            if(i==observationsX.length){
+            if (i === observationsX.length) {
                 i--;
                 break;
             }
@@ -75,13 +81,13 @@
         const b = -observationsK[i] * (observationsX[i] - observationsX[i - 1]) + (observationsY[i] - observationsY[i - 1]);
 
         return (1 - t) * observationsY[i - 1] + t * observationsY[i] + t * (1 - t) * (a * (1 - t) + b * t);
-    }
+    };
 
     const computeSplineNaturalDerivations = function (observationsX, observationsY)    // in x values, in y values, out k values
     {
         const n = observationsX.length - 1;
         const matrix = math.zeros(n + 1, n + 1).valueOf();
-        const vector = math.zeros(n+1).valueOf();
+        const vector = math.zeros(n + 1).valueOf();
         for (let i = 1; i < n; i++) {
             let h_im1 = observationsX[i] - observationsX[i - 1];
             let h_i = observationsX[i + 1] - observationsX[i];
@@ -105,11 +111,11 @@
         matrix[n][n - 1] = 1 / h_nm1;
         matrix[n][n] = 2 / h_nm1;
         vector[n] = 3 * y_nm1 / (h_nm1 * h_nm1);
-        return math.multiply(math.inv(matrix),vector);
-    }
+        return math.multiply(math.inv(matrix), vector);
+    };
 
     const drawAll = function () {
-        if(observationsX.length<2){
+        if (observationsX.length < 2) {
             return;
         }
         drawGrid(config);

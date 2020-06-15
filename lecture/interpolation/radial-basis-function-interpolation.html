@@ -1,6 +1,12 @@
 <h1>Radial Basis Function Interpolation</h1>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Dosis', sans-serif;
+    }
+
     .canvasContainer {
         position: relative;
     }
@@ -27,7 +33,7 @@
     </select>
     <br/>
     <label>Kernel Parameter</label><input type="range" min="1" max="200" value="5"
-                                          onchange="window.updateKernelParam(this.value);"></input>
+                                          onchange="window.updateKernelParam(this.value);"/>
     <br/>
     <button onclick="clearObservations()">Clear Observations</button>
     <br/>
@@ -74,13 +80,13 @@
 
     const kernelWithParameter = function (x1, x2, param) {
         let n = math.norm(math.subtract(x1, x2));
-        if (kernelIndex == 0) {
-            return math.exp(-kernelParam * kernelParam * n * n);
-        } else if (kernelIndex == 1) {
-            return math.sqrt(1 + kernelParam * kernelParam * n * n);
-        } else if (kernelIndex == 2) {
-            if (n < 1 / kernelParam) {
-                return math.exp(-1.0 / (1 - kernelParam * kernelParam * n * n));
+        if (kernelIndex === 0) {
+            return math.exp(-param * param * n * n);
+        } else if (kernelIndex === 1) {
+            return math.sqrt(1 + param * param * n * n);
+        } else if (kernelIndex === 2) {
+            if (n < 1 / param) {
+                return math.exp(-1.0 / (1 - param * param * n * n));
             }
             return 0;
         }

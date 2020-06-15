@@ -1,6 +1,12 @@
 <h1>Nearest-neighbor Interpolation</h1>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Dosis', sans-serif;
+    }
+
     .canvasContainer {
         position: relative;
     }
@@ -27,7 +33,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
 <script src="../../graphplot.js" type="module"></script>
 <script type="module">
-    import {drawFunction, drawGrid, drawPoints, getGradientVector, draw3dFunction} from '../../graphplot.js';
+    import {draw3dFunction, drawGrid, drawPoints, getGradientVector} from '../../graphplot.js';
 
     const canvas = document.getElementById("grid");
     const config = {
@@ -53,23 +59,23 @@
     const func3 = function (x, y) {
         return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
     };
-    let observationsX = [[-0.5, 0], [0.1,1], [1.2,-1], [1.65,0.5]];
+    let observationsX = [[-0.5, 0], [0.1, 1], [1.2, -1], [1.65, 0.5]];
     let observationsY = observationsX.map(x => func3(x[0], x[1]));
-    let observations = observationsX.map(x => [x, func3(x[0],x[1])]);
+    let observations = observationsX.map(x => [x, func3(x[0], x[1])]);
 
     const interpolateNearestNeighbour = function (x1, x2) {
-        const x = [x1,x2];
+        const x = [x1, x2];
         let minDistance = Infinity;
         let nearestY = Infinity;
         for (let i = 0; i < observationsX.length; i++) {
             const distance = math.norm(math.subtract(x, observationsX[i]));
-            if (distance < minDistance){
+            if (distance < minDistance) {
                 minDistance = distance;
                 nearestY = observationsY[i];
             }
         }
         return nearestY;
-    }
+    };
 
     const drawAll = function () {
         drawGrid(config);
@@ -80,7 +86,7 @@
             observationsX
         );
 
-        window.draw3dFunctionWithGradient = function(gradientIndex) {
+        window.draw3dFunctionWithGradient = function (gradientIndex) {
             const gv = getGradientVector(gradientIndex, 4096);
             draw3dFunction(configInterpolation, -3.5, 3.5, 0.9, gv, interpolateNearestNeighbour);
         };
@@ -91,8 +97,8 @@
     window.addRandomObservationPoint = function () {
         const x1 = Math.random() * (config.xMax - config.xMin) + config.xMin;
         const x2 = Math.random() * (config.yMax - config.yMin) + config.yMin;
-        observationsX.push([x1,x2]);
-        observationsX.sort((a,b) => a-b);
+        observationsX.push([x1, x2]);
+        observationsX.sort((a, b) => a - b);
         observationsY = observationsX.map(x => func3(x[0], x[1]));
         observations = observationsX.map(x => [x, func3(x[0], x[1])]);
         drawAll();

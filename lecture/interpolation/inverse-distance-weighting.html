@@ -1,6 +1,12 @@
 <h1>Inverse Distance Weighting</h1>
 
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Dosis', sans-serif;
+    }
+
     .canvasContainer {
         position: relative;
     }
@@ -20,7 +26,7 @@
 </div>
 <div style="width:600px;height:600px;padding-left:620px">
     <label>Distance Exponent</label><input type="range" min="5" max="50" value="20"
-                                           onchange="window.updateWeightParam(this.value);"></input>
+                                           onchange="window.updateWeightParam(this.value);"/>
     <br/>
     <button onclick="clearObservations()">Clear Observations</button>
     <br/>
