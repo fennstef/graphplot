@@ -16,6 +16,16 @@
         left: 0;
         top: 0;
     }
+
+    .select-panel {
+        width: 600px;
+        height: 600px;
+        padding-left: 620px;
+    }
+
+    .select-panel canvas {
+        border: 1px solid #ddd;
+    }
 </style>
 
 <div class="canvasContainer">
@@ -24,17 +34,27 @@
     <canvas id="fn2" width="600px" height="600px"></canvas>
     <canvas id="interpolation" width="600px" height="600px"></canvas>
 </div>
-<div style="width:600px;height:600px;padding-left:620px">
-    Kernel
-    <select onchange="window.updateKernel(this.selectedIndex);">
-        <option value="0">Gaussian Function</option>
-        <option value="1">Multiquadric Function</option>
-        <option value="2">Bump Function</option>
-    </select>
+<div class="select-panel">
+    Kernel Function
     <br/>
-    <label>Kernel Parameter</label><input type="range" min="1" max="200" value="5"
-                                          onchange="window.updateKernelParam(this.value);"/>
+    <canvas id="basefunction" width="150px" height="150px"></canvas>
     <br/>
+    <label>Kernel
+        <select onchange="window.updateKernel(this.value);">
+            <option value="gaussian">Gaussian Function</option>
+            <option value="multiquadric">Multiquadric Function</option>
+            <option value="inverse_quadratic">Inverse quadratic</option>
+            <option value="inverse_multiquadric">Inverse multiquadric</option>
+            <option value="polyharmonic_spline">Polyharmonic spline</option>
+            <option value="bump">Bump Function</option>
+        </select>
+    </label>
+    <br/>
+    <label>Kernel Parameter
+        <input type="range" min="1" max="200" value="5"
+               onchange="window.updateKernelParam(this.value);"/>
+    </label>
+    <br/><br/>
     <button onclick="clearObservations()">Clear Observations</button>
     <br/>
     <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
@@ -66,6 +86,16 @@
     const configInterpolation = Object.assign({}, config);
     configInterpolation.ctx = canvasInterpolation.getContext("2d");
 
+    const canvasBasefunction = document.getElementById("basefunction");
+    const configBasefunction = {
+        xMin: -1,
+        xMax: 1,
+        yMin: -0.2,
+        yMax: 1.2,
+        ctx: canvasBasefunction.getContext("2d")
+    }
+
+
     const func = x => {
         let result = -x * Math.sin(10 * x);
         if ((x < -1) || (x > 2)) return -2;
@@ -74,21 +104,36 @@
     let observationsX = [-0.5, 0.1, 1.2, 1.65];
     let observationsY = observationsX.map(x => func(x));
     let observations = observationsX.map(x => [x, func(x)]);
-    let kernelIndex = 0;
+    let kernelType = "gaussian";
     let kernelParam = 0.1;
     let weights;
 
     const kernelWithParameter = function (x1, x2, param) {
         let n = math.norm(math.subtract(x1, x2));
-        if (kernelIndex === 0) {
+        if (kernelType === "gaussian") {
             return math.exp(-param * param * n * n);
-        } else if (kernelIndex === 1) {
+        } else if (kernelType === "multiquadric") {
             return math.sqrt(1 + param * param * n * n);
-        } else if (kernelIndex === 2) {
+        } else if (kernelType === "bump") {
             if (n < 1 / param) {
                 return math.exp(-1.0 / (1 - param * param * n * n));
             }
             return 0;
+        } else if (kernelType === "inverse_quadratic") {
+            return 1 / (1 + param * param * n * n);
+        } else if (kernelType === "inverse_multiquadric") {
+            return 1 / math.sqrt(1 + param * param * n * n);
+        } else if (kernelType === "polyharmonic_spline") {
+            const min = 1 * 0.1;
+            const max = 200 * 0.1;
+            let k = math.round((param - min) / (max-min) * 10 + 1);
+            if (k % 2 == 1) {
+                return math.pow(n, k);
+            } else {
+                return math.pow(n, k - 1) * math.log(math.pow(n, n));
+            }
+        } else if (kernelType === "6") {
+            return 1;
         }
         return 0;
     };
@@ -140,10 +185,16 @@
             "#000000",
             x => interpolateRadialBasisFunction(x)
         );
+
+        drawFunction(
+            configBasefunction,
+            "#000000",
+            x => kernelWithParameter(0, x, kernelParam)
+        );
     };
     drawAll();
-    window.updateKernel = function (index) {
-        kernelIndex = index;
+    window.updateKernel = function (type) {
+        kernelType = type;
         drawAll();
     };
     window.updateKernelParam = function (param) {
