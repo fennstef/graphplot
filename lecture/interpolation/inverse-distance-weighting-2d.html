@@ -27,7 +27,7 @@
 <div style="width:600px;height:600px;padding-left:620px">
     <label>Distance Exponent</label><input type="range" min="5" max="50" value="20"
                                            onchange="window.updateWeightParam(this.value);"/>
-    <br/>
+    <br/><br/>
     <button onclick="clearObservations()">Clear Observations</button>
     <br/>
     <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
@@ -87,7 +87,12 @@
         return u / l;
     };
 
+
+    let stopFunctionPlot;
     const drawAll = function () {
+        if(stopFunctionPlot){
+            stopFunctionPlot();
+        }
         drawGrid(config);
 
         drawPoints(
@@ -98,7 +103,7 @@
 
         window.draw3dFunctionWithGradient = function (gradientIndex) {
             const gv = getGradientVector(gradientIndex, 4096);
-            draw3dFunction(configInterpolation, -2.5, 2.5, 0.9, gv, interpolateIDW);
+            stopFunctionPlot = draw3dFunction(configInterpolation, -2.5, 2.5, 0.9, gv, interpolateIDW);
         };
         window.draw3dFunctionWithGradient(0);
     };

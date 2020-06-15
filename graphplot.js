@@ -315,10 +315,11 @@ export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
 
     let w = 0;
     let h = -1;
+    let stopNow = false;
 
     const drawInTimeSlot = function () {
         const start = +new Date();
-        while (+new Date() - start < 70) {
+        while (+new Date() - start < 70 && !stopNow) {
             if (w >= c.ctx.canvas.width) {
                 break;
             }
@@ -350,10 +351,11 @@ export function draw3dFunction(c, zMin, zMax, alpha, gv, func) {
             data.data[index + 3] = a;
         }
         c.ctx.putImageData(data, 0, 0);
-        if (w < c.ctx.canvas.width) {
+        if (w < c.ctx.canvas.width && !stopNow) {
             setTimeout(()=> drawInTimeSlot());
         }
     };
 
     drawInTimeSlot();
+    return () => stopNow = true;
 }
