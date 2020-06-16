@@ -30,9 +30,9 @@
 
 <div class="canvasContainer">
     <canvas id="grid" width="600px" height="600px"></canvas>
-    <canvas id="observations" width="600px" height="600px"></canvas>
     <canvas id="fn2" width="600px" height="600px"></canvas>
     <canvas id="interpolation" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
 </div>
 <div class="select-panel">
     Kernel Function
@@ -63,7 +63,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
 <script src="../../graphplot.js" type="module"></script>
 <script type="module">
-    import {drawFunction, drawGrid, drawPoints} from '../../graphplot.js';
+    import {draw3dFunction, drawGrid, drawPoints, drawFunction, getGradientVector} from '../../graphplot.js';
 
     const canvas = document.getElementById("grid");
     const config = {
@@ -95,14 +95,12 @@
         ctx: canvasBasefunction.getContext("2d")
     }
 
-    const func = x => {
-        let result = -x * Math.sin(10 * x);
-        if ((x < -1) || (x > 2)) return -2;
-        return result;
+    const func3 = function (x, y) {
+        return Math.sin(x * 2) * y + Math.cos(y * 5) * x;
     };
-    let observationsX = [-0.5, 0.1, 1.2, 1.65];
-    let observationsY = observationsX.map(x => func(x));
-    let observations = observationsX.map(x => [x, func(x)]);
+    let observationsX = [[-0.5, 0], [0.1, 1], [1.2, -1], [1.65, 0.5]];
+    let observationsY = observationsX.map(x => func3(x[0], x[1]));
+    let observations = observationsX.map(x => [x, func3(x[0], x[1])]);
     let kernelType = "gaussian";
     let kernelParam = 0.1;
     let weights;
@@ -147,40 +145,30 @@
         return K;
     };
 
-    const interpolateRadialBasisFunction = function (x) {
+    const interpolateRadialBasisFunction = function (x1, x2) {
+        const x = [x1, x2];
         const kernel = (x1, x2) => kernelWithParameter(x1, x2, kernelParam);
         const phiX = observationsX.map(xi => kernel(x, xi));
         const y = math.multiply(weights, math.transpose(phiX));
         return y;
     };
 
+    let stopFunctionPlot;
     const drawAll = function () {
         const kernel = (x1, x2) => kernelWithParameter(x1, x2, kernelParam);
         const matK = K(observationsX, observationsX, kernel);
         const invMatK = math.inv(matK);
         weights = math.multiply(invMatK, observationsY);
 
-
-        if (observationsX.length < 2) {
-            return;
+        if(stopFunctionPlot){
+            stopFunctionPlot();
         }
         drawGrid(config);
+
         drawPoints(
             configObservations,
             "#0000FF",
-            observations
-        );
-
-        drawFunction(
-            configF2,
-            "#00000030",
-            x => func(x)
-        );
-
-        drawFunction(
-            configInterpolation,
-            "#000000",
-            x => interpolateRadialBasisFunction(x)
+            observationsX
         );
 
         drawFunction(
@@ -188,6 +176,12 @@
             "#000000",
             x => kernelWithParameter(0, x, kernelParam)
         );
+
+        window.draw3dFunctionWithGradient = function (gradientIndex) {
+            const gv = getGradientVector(gradientIndex, 4096);
+            stopFunctionPlot = draw3dFunction(configInterpolation, -3.5, 3.5, 0.9, gv, interpolateRadialBasisFunction);
+        };
+        window.draw3dFunctionWithGradient(0);
     };
     drawAll();
     window.updateKernel = function (type) {
@@ -199,16 +193,16 @@
         drawAll();
     };
     window.addRandomObservationPoint = function () {
-        const x = Math.random() * (config.xMax - config.xMin) + config.xMin;
-        observationsX.push(x);
+        const x1 = Math.random() * (config.xMax - config.xMin) + config.xMin;
+        const x2 = Math.random() * (config.yMax - config.yMin) + config.yMin;
+        observationsX.push([x1, x2]);
         observationsX.sort((a, b) => a - b);
-        observationsY = observationsX.map(x => func(x));
-        observations = observationsX.map(x => [x, func(x)]);
+        observationsY = observationsX.map(x => func3(x[0], x[1]));
+        observations = observationsX.map(x => [x, func3(x[0], x[1])]);
         drawAll();
     };
     window.clearObservations = function () {
         observationsX = [];
-        window.addRandomObservationPoint();
         window.addRandomObservationPoint();
     };
 </script>
@@ -218,10 +212,3 @@
 <script id="MathJax-script" async
         src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
 </script>
-<div style="width:600px;padding-top:20px">
-    <h3>Plot of function</h3>
-
-    <p>
-        \[ f(x) = - x \sin(10 x) \]
-    </p>
-</div>

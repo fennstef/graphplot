@@ -77,7 +77,11 @@
         return nearestY;
     };
 
+    let stopFunctionPlot;
     const drawAll = function () {
+        if(stopFunctionPlot){
+            stopFunctionPlot();
+        }
         drawGrid(config);
 
         drawPoints(
@@ -88,7 +92,7 @@
 
         window.draw3dFunctionWithGradient = function (gradientIndex) {
             const gv = getGradientVector(gradientIndex, 4096);
-            draw3dFunction(configInterpolation, -3.5, 3.5, 0.9, gv, interpolateNearestNeighbour);
+            stopFunctionPlot = draw3dFunction(configInterpolation, -3.5, 3.5, 0.9, gv, interpolateNearestNeighbour);
         };
         window.draw3dFunctionWithGradient(0);
     };
