@@ -1,0 +1,276 @@
+<h1>Gausian Process Interpolation</h1>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Dosis', sans-serif;
+    }
+
+    .canvasContainer {
+        position: relative;
+    }
+
+    .canvasContainer canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+</style>
+
+<div class="canvasContainer">
+    <canvas id="grid" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="gp_mean" width="600px" height="600px"></canvas>
+    <canvas id="gp_conv" width="600px" height="600px"></canvas>
+    <canvas id="gp_conv_map" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
+</div>
+<div style="width:600px;height:600px;padding-left:620px">
+    <label>Kernel
+        <select onchange="window.updateKernel(this.value);">
+            <option value="gaussian">Gaussian Function</option>
+            <option value="multiquadric">Multiquadric Function</option>
+            <option value="inverse_quadratic">Inverse quadratic</option>
+            <option value="inverse_multiquadric">Inverse multiquadric</option>
+            <option value="polyharmonic_spline">Polyharmonic spline</option>
+            <option value="bump">Bump Function</option>
+        </select>
+    </label>
+    <br/>
+    <label>Kernel Parameter</label><input type="range" min="1" max="30" value="10"
+                                          onchange="window.updateKernelParam(this.value);"></input>
+    <br/>
+    <button onclick="clearObservations()">Clear Observations</button>
+    <br/>
+    <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/6.6.4/math.min.js"></script>
+<script src="../../graphplot.js" type="module"></script>
+<script type="module">
+    import {
+        clear,
+        draw3dFunction,
+        drawFunction,
+        drawGrid,
+        drawPoints,
+        getGradientVector,
+        lineToPoints,
+        xCoordToPix,
+        xPixToCoord
+    } from '../../graphplot.js';
+
+    const canvas = document.getElementById("grid");
+    const config = {
+        xMin: -1,
+        xMax: 2,
+        yMin: -2.2,
+        yMax: 2.2,
+        ctx: canvas.getContext("2d")
+    };
+
+    const canvasF2 = document.getElementById("fn2");
+    const configF2 = Object.assign({}, config);
+    configF2.ctx = canvasF2.getContext("2d");
+
+    const canvasObs = document.getElementById("observations");
+    const configObs = Object.assign({}, config);
+    configObs.ctx = canvasObs.getContext("2d");
+
+    const canvasGpMean = document.getElementById("gp_mean");
+    const configGpMean = Object.assign({}, config);
+    configGpMean.ctx = canvasGpMean.getContext("2d");
+
+    const canvasGpConv = document.getElementById("gp_conv");
+    const configGpConv = Object.assign({}, config);
+    configGpConv.ctx = canvasGpConv.getContext("2d");
+
+    const canvasGpConvMap = document.getElementById("gp_conv_map");
+    const configGpConvMap = Object.assign({}, config);
+    configGpConvMap.ctx = canvasGpConvMap.getContext("2d");
+
+    drawGrid(config);
+    const func = x => {
+        let result = -x * Math.sin(10 * x);
+        if ((x < -1) || (x > 2)) return -2;
+        return result;
+    };
+    drawFunction(configF2, "#00000030", func);
+
+    const K = function (x0, x1, kernel) {
+        let K = [];
+        for (let x0i of x0) {
+            let k_x_x = [];
+            for (let x1i of x1) {
+                k_x_x.push(kernel(x0i, x1i));
+            }
+            K.push(k_x_x);
+        }
+        return K;
+    }
+
+    const posterioriMean = function (x, x_new, sigma, y, kernel) {
+        const scope = {
+            x_new: x_new,
+            x: x,
+            xl: x.length,
+            sigma: sigma,
+            y: y,
+            K: (x1, x2) => K(x1, x2, kernel)
+        };
+        //Seite 8 Conditional of a joint Gaussian
+        //http://cs229.stanford.edu/section/more_on_gaussians.pdf
+        return math.evaluate('K(x_new,x) * inv(K(x,x) + sigma .* identity(xl)) * transpose(y)', scope);
+    };
+
+    const posteriorCov = function (x, x_new, sigma, kernel) {
+        const scope = {
+            x: x,
+            xl: x.length,
+            sigma: sigma,
+            K: (x1, x2) => K(x1, x2, kernel)
+        };
+
+        const r = [];
+        const invSigma = math.evaluate('inv(K(x,x) + sigma .* identity(xl))', scope).valueOf();
+        for (let x_i_new of x_new) {
+            const scope2 = {
+                x_new: [x_i_new],
+                x: x,
+                xl: x.length,
+                sigma: sigma,
+                K: (x1, x2) => K(x1, x2, kernel),
+                invSigma: invSigma
+            };
+            const stdSqr = math.evaluate('K(x_new, x_new) - K(x_new, x) * invSigma * K(x, x_new)', scope2).valueOf()[0][0];
+            r.push(math.abs(stdSqr));
+        }
+        return r;
+    };
+
+    let observationsX = [-0.75, 0.1, 1.2, 1.65];
+    let observationsY = observationsX.map(x => func(x));
+    let observations = observationsX.map(x => [x, func(x)]);
+    let kernelType = "gaussian";
+    let kernelParam = 0.1;
+
+    const kernelWithParameter = function (x1, x2, param) {
+        let n = math.norm(math.subtract(x1, x2));
+        if (kernelType === "gaussian") {
+            return math.exp(-param * param * n * n);
+        } else if (kernelType === "multiquadric") {
+            return math.sqrt(1 + param * param * n * n);
+        } else if (kernelType === "bump") {
+            if (n < 1 / param) {
+                return math.exp(-1.0 / (1 - param * param * n * n));
+            }
+            return 0;
+        } else if (kernelType === "inverse_quadratic") {
+            return 1 / (1 + param * param * n * n);
+        } else if (kernelType === "inverse_multiquadric") {
+            return 1 / math.sqrt(1 + param * param * n * n);
+        } else if (kernelType === "polyharmonic_spline") {
+            const min = 1 * 0.1;
+            const max = 200 * 0.1;
+            let k = math.round((param - min) / (max - min) * 10 + 1);
+            if (k % 2 == 1) {
+                return math.pow(n, k);
+            } else {
+                return math.pow(n, k - 1) * math.log(math.pow(n, n));
+            }
+        }
+        return 0;
+    };
+
+    const pdf = function (x, mu = 0, sigma = 1) {
+        if (sigma === 0) {
+            return x === mu ? Infinity : 0;
+        }
+        return Math.exp(-.5 * Math.pow(x - mu, 2) / sigma) / Math.sqrt(2 * Math.PI * sigma);
+    };
+
+    const drawAll = function () {
+        drawPoints(
+            configObs,
+            "#0000FF",
+            observations
+        );
+
+        const kernel = (x1, x2) => kernelWithParameter(x1, x2, kernelParam);
+        const sigma = 0.000001;
+        const x_new = [];
+        const xCoordStart = xCoordToPix(config, config.xMin);
+        const xCoordEnd = xCoordToPix(config, config.xMax);
+        for (let i = xCoordStart; i < xCoordEnd; i++) {
+            x_new.push(xPixToCoord(config, i))
+        }
+        const mean = posterioriMean(observationsX, x_new, sigma, observationsY, kernel).valueOf();
+        drawFunction(configGpMean, "#000000", (x) => {
+            const w = xCoordToPix(config, x);
+            return mean[w - xCoordStart];
+        });
+
+        const standardDeviation = posteriorCov(observationsX, x_new, sigma, kernel);
+
+        const xs = [...Array(config.ctx.canvas.width).keys()];
+        const ysU = xs.map(x => {
+            return mean[x] + 1.96 * standardDeviation[x];
+        });
+        const ysL = xs.map(x => {
+            return mean[x] - 1.96 * standardDeviation[x];
+        });
+
+        const gv = getGradientVector(2, 4096);
+        draw3dFunction(configGpConvMap, 0, 1, 0.5, gv, (x, y) => {
+            const w = xCoordToPix(config, x);
+            const m = mean[w - xCoordStart];
+            const s = standardDeviation[w - xCoordStart];
+            return pdf(y, m, s);
+        });
+
+        clear(configGpConv);
+        configGpConv.ctx.fillStyle = "#0000b050";
+        configGpConv.ctx.lineWidth = 3;
+        configGpConv.ctx.beginPath();
+        lineToPoints(configGpConv, xs, ysU);
+        lineToPoints(configGpConv, [...xs].reverse(), [...ysL].reverse());
+        //configGpConv.ctx.fill();
+    };
+
+    window.updateKernel = function (type) {
+        kernelType = type;
+        drawAll();
+    };
+    window.updateKernelParam = function (param) {
+        kernelParam = param;
+        drawAll();
+    };
+    window.addRandomObservationPoint = function () {
+        const x = math.random() * (config.xMax - config.xMin) + config.xMin;
+        observationsX.push(x);
+        observationsY = observationsX.map(x => func(x));
+        observations = observationsX.map(x => [x, func(x)]);
+        drawAll();
+    };
+    window.clearObservations = function () {
+        observationsX = [];
+        window.addRandomObservationPoint();
+    };
+
+    drawAll();
+</script>
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+<div style="width:600px;padding-top:20px">
+    <h3>Plot of function</h3>
+
+    <p>
+        \[ f(x) = - x \sin(10 x) \]
+    </p>
+</div>
