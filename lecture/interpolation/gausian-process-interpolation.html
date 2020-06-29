@@ -41,6 +41,13 @@
     <label>Kernel Parameter</label><input type="range" min="1" max="30" value="10"
                                           onchange="window.updateKernelParam(this.value);"></input>
     <br/>
+    <label>Border of standard deviation</label>
+    <select onchange="window.updateBorderStd(this.value);">
+        <option value="false">off</option>
+        <option value="true">on</option>
+    </select>
+
+    <br/>
     <button onclick="clearObservations()">Clear Observations</button>
     <br/>
     <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
@@ -155,6 +162,7 @@
     let observations = observationsX.map(x => [x, func(x)]);
     let kernelType = "gaussian";
     let kernelParam = 0.1;
+    let showBorderStd = false;
 
     const kernelWithParameter = function (x1, x2, param) {
         let n = math.norm(math.subtract(x1, x2));
@@ -222,21 +230,25 @@
             return mean[x] - 1.96 * standardDeviation[x];
         });
 
-        const gv = getGradientVector(2, 4096);
-        draw3dFunction(configGpConvMap, 0, 1, 0.5, gv, (x, y) => {
-            const w = xCoordToPix(config, x);
-            const m = mean[w - xCoordStart];
-            const s = standardDeviation[w - xCoordStart];
-            return pdf(y, m, s);
-        });
-
         clear(configGpConv);
-        configGpConv.ctx.fillStyle = "#0000b050";
-        configGpConv.ctx.lineWidth = 3;
-        configGpConv.ctx.beginPath();
-        lineToPoints(configGpConv, xs, ysU);
-        lineToPoints(configGpConv, [...xs].reverse(), [...ysL].reverse());
-        //configGpConv.ctx.fill();
+        clear(configGpConvMap);
+        if (showBorderStd === true) {
+            configGpConv.ctx.fillStyle = "#0000b050";
+            configGpConv.ctx.lineWidth = 3;
+            configGpConv.ctx.beginPath();
+            lineToPoints(configGpConv, xs, ysU);
+            lineToPoints(configGpConv, [...xs].reverse(), [...ysL].reverse());
+            configGpConv.ctx.fill();
+        } else {
+            const gv = getGradientVector(2, 4096);
+            draw3dFunction(configGpConvMap, -1, 0, 0.5, gv, (x, y) => {
+                const w = xCoordToPix(config, x);
+                const m = mean[w - xCoordStart];
+                const s = standardDeviation[w - xCoordStart] * 0.5;
+                const v = -pdf(y, m, s);
+                return Math.max(-1, Math.min(0, v));
+            });
+        }
     };
 
     window.updateKernel = function (type) {
@@ -258,7 +270,10 @@
         observationsX = [];
         window.addRandomObservationPoint();
     };
-
+    window.updateBorderStd = function (value) {
+        showBorderStd = value === 'true';
+        drawAll();
+    };
     drawAll();
 </script>
 
