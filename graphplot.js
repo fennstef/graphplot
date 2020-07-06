@@ -281,6 +281,11 @@ export function getGradientVector(colorMapIndex, levels) {
         0.8571:'#c9d9ff',
         1:'#9fbfff'
     };
+    const gradientColors10 = {
+        0.0: "#003649",
+        0.5: "#0081a8",
+        1.0: "#ffffff"
+    };
 
     const gradientColorList = [
         gradientColors1,
@@ -291,7 +296,8 @@ export function getGradientVector(colorMapIndex, levels) {
         gradientColors6,
         gradientColors7,
         gradientColors8,
-        gradientColors9
+        gradientColors9,
+        gradientColors10
     ];
 
     const gradientColors = gradientColorList[colorMapIndex];
