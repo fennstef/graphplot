@@ -20,13 +20,17 @@
 
 <div class="canvasContainer">
     <canvas id="grid" width="600px" height="600px"></canvas>
-    <canvas id="fn2" width="600px" height="600px"></canvas>
-    <canvas id="gp_mean" width="600px" height="600px"></canvas>
     <canvas id="gp_conv" width="600px" height="600px"></canvas>
     <canvas id="gp_conv_map" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="gp_mean" width="600px" height="600px"></canvas>
     <canvas id="observations" width="600px" height="600px"></canvas>
 </div>
 <div style="width:600px;height:600px;padding-left:620px">
+    Kernel Function
+    <br/>
+    <canvas id="basefunction" width="150px" height="150px"></canvas>
+    <br/>
     <label>Kernel
         <select onchange="window.updateKernel(this.value);">
             <option value="gaussian">Gaussian Function</option>
@@ -38,7 +42,7 @@
         </select>
     </label>
     <br/>
-    <label>Kernel Parameter</label><input type="range" min="1" max="30" value="10"
+    <label>Kernel Parameter</label><input type="range" min="1" max="30" value="4"
                                           onchange="window.updateKernelParam(this.value);"></input>
     <br/>
     <label>Border of standard deviation</label>
@@ -97,6 +101,15 @@
     const canvasGpConvMap = document.getElementById("gp_conv_map");
     const configGpConvMap = Object.assign({}, config);
     configGpConvMap.ctx = canvasGpConvMap.getContext("2d");
+
+    const canvasBasefunction = document.getElementById("basefunction");
+    const configBasefunction = {
+        xMin: -1,
+        xMax: 1,
+        yMin: -0.2,
+        yMax: 1.2,
+        ctx: canvasBasefunction.getContext("2d")
+    };
 
     drawGrid(config);
     const func = x => {
@@ -161,7 +174,7 @@
     let observationsY = observationsX.map(x => func(x));
     let observations = observationsX.map(x => [x, func(x)]);
     let kernelType = "gaussian";
-    let kernelParam = 0.1;
+    let kernelParam = 4;
     let showBorderStd = false;
 
     const kernelWithParameter = function (x1, x2, param) {
@@ -202,8 +215,13 @@
     const drawAll = function () {
         drawPoints(
             configObs,
-            "#0000FF",
+            "#c77800",
             observations
+        );
+        drawFunction(
+            configBasefunction,
+            "#000000",
+            x => kernelWithParameter(0, x, kernelParam)
         );
 
         const kernel = (x1, x2) => kernelWithParameter(x1, x2, kernelParam);
@@ -240,8 +258,8 @@
             lineToPoints(configGpConv, [...xs].reverse(), [...ysL].reverse());
             configGpConv.ctx.fill();
         } else {
-            const gv = getGradientVector(2, 4096);
-            draw3dFunction(configGpConvMap, -1, 0, 0.5, gv, (x, y) => {
+            const gv = getGradientVector(9, 4096);
+            draw3dFunction(configGpConvMap, -1, 0, 0.8, gv, (x, y) => {
                 const w = xCoordToPix(config, x);
                 const m = mean[w - xCoordStart];
                 const s = standardDeviation[w - xCoordStart] * 0.5;
