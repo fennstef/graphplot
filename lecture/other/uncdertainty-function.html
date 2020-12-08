@@ -1,0 +1,152 @@
+<h1>Uncertainty Function</h1>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Dosis:wght@400;700&display=swap');
+
+    body {
+        font-family: 'Dosis', sans-serif;
+    }
+
+    .canvasContainer {
+        position: relative;
+    }
+
+    .canvasContainer canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+</style>
+
+<div class="canvasContainer">
+    <canvas id="grid" width="600px" height="600px"></canvas>
+    <canvas id="observations" width="600px" height="600px"></canvas>
+    <canvas id="fn2" width="600px" height="600px"></canvas>
+    <canvas id="interpolation" width="600px" height="600px"></canvas>
+</div>
+<div style="width:600px;height:600px;padding-left:620px">
+    <label>Distance Exponent</label><input type="range" min="5" max="50" value="20"
+                                           onchange="window.updateWeightParam(this.value);"/>
+    <br/>
+    <button onclick="clearObservations()">Clear Observations</button>
+    <br/>
+    <button onclick="addRandomObservationPoint()">Add random Observation Point</button>
+</div>
+
+<script src="../../graphplot_v1.js" type="module"></script>
+<script type="module">
+    import {drawFunction, drawGrid, drawPoints} from '../../graphplot_v1.js';
+
+    const canvas = document.getElementById("grid");
+    const config = {
+        xMin: -1,
+        xMax: 2,
+        yMin: -2.2,
+        yMax: 2.2,
+        ctx: canvas.getContext("2d")
+    };
+
+    const canvasObservations = document.getElementById("observations");
+    const configObservations = Object.assign({}, config);
+    configObservations.ctx = canvasObservations.getContext("2d");
+
+    const canvasF2 = document.getElementById("fn2");
+    const configF2 = Object.assign({}, config);
+    configF2.ctx = canvasF2.getContext("2d");
+
+    const canvasInterpolation = document.getElementById("interpolation");
+    const configInterpolation = Object.assign({}, config);
+    configInterpolation.ctx = canvasInterpolation.getContext("2d");
+
+    const func = x => {
+        let result = -x * Math.sin(10 * x);
+        if ((x < -1) || (x > 2)) return -2;
+        return result;
+    };
+    let observationsX = [-0.5, 0.1, 1.2, 1.65];
+    let observationsY = observationsX.map(x => func(x));
+    let observations = observationsX.map(x => [x, func(x)]);
+    let weightParam = 2;
+    let distanceFunc = (x1, x2) => Math.pow(Math.abs(x1 - x2), weightParam);
+
+    const uncertaintyFunction = function (x) {
+        let maxOfMinObs = 0;
+        for (let i = 0; i < observationsX.length; i++) {
+            let minObs = 5000;
+            const x_i = observationsX[i];
+            for (let j = 0; j < observationsX.length; j++) {
+                if (i == j) {
+                    continue;
+                }
+                const x_j = observationsX[j];
+                const distance = distanceFunc(x_j, x_i);
+                if (distance < minObs) {
+                    minObs = Math.min(minObs, distance);
+                }
+            }
+            maxOfMinObs += minObs;
+        }
+        maxOfMinObs = maxOfMinObs / observationsX.length;
+        let min = 5000;
+        for (let i = 0; i < observationsX.length; i++) {
+            const x_i = observationsX[i];
+            const distance = distanceFunc(x, x_i);
+            if (distance < min) {
+                min = Math.min(min, distance);
+            }
+        }
+        return min / maxOfMinObs;
+    };
+
+    const drawAll = function () {
+        drawGrid(config);
+        drawPoints(
+            configObservations,
+            "#0000FF",
+            observations
+        );
+
+        drawFunction(
+            configF2,
+            "#00000030",
+            x => func(x)
+        );
+
+        drawFunction(
+            configInterpolation,
+            "#000000",
+            x => uncertaintyFunction(x)
+        );
+    };
+    drawAll();
+
+    window.addRandomObservationPoint = function () {
+        const x = Math.random() * (config.xMax - config.xMin) + config.xMin;
+        observationsX.push(x);
+        observationsX.sort((a, b) => a - b);
+        observationsY = observationsX.map(x => func(x));
+        observations = observationsX.map(x => [x, func(x)]);
+        drawAll();
+    };
+    window.clearObservations = function () {
+        observationsX = [];
+        window.addRandomObservationPoint();
+    };
+    window.updateWeightParam = function (value) {
+        weightParam = value / 10;
+        drawAll();
+    }
+</script>
+
+
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+<div style="width:600px;padding-top:20px">
+    <h3>Plot of function</h3>
+
+    <p>
+        \[ f(x) = - x \sin(10 x) \]
+    </p>
+</div>
